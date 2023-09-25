@@ -35,6 +35,7 @@ class SimpleNetwork:
 
         :param layer_weights: A list of weight matrices
         """
+        self.layer_weights = layer_weights
 
     def predict(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -51,6 +52,9 @@ class SimpleNetwork:
         outputs - each in the range (0, 1) - for the corresponding row in the
         input matrix.
         """
+        
+        for i in self.layer_weights:
+            o = input_matrix.dot(self.layer_weights[i])
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
