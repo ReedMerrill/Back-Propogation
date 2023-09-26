@@ -2,6 +2,8 @@
 The main code for the back propagation assignment. See README.md for details.
 """
 import math
+import copy
+from scipy.special import expit as sig
 from typing import List
 
 import numpy as np
@@ -52,9 +54,14 @@ class SimpleNetwork:
         outputs - each in the range (0, 1) - for the corresponding row in the
         input matrix.
         """
-        
-        for i in self.layer_weights:
-            o = input_matrix.dot(self.layer_weights[i])
+        # initialize the output matrix as the input matrix
+        o = copy.deepcopy(input_matrix)
+        # Apply each set of weights using the dot product. Also apply 
+            # sigmoid transformation to each layer.
+        for weights in self.layer_weights:
+            o = sig(o.dot(weights))
+
+        return o
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
