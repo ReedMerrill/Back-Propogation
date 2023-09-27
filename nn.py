@@ -76,7 +76,11 @@ class SimpleNetwork:
         outputs - each either 0 or 1 - for the corresponding row in the input
         matrix.
         """
-        return np.where(condition=self.predict(input_matrix)>0.5, x=1, y=0)
+        # run the predict method to get initial predictions (belonging to a 
+            # logistic distribution)
+        out = self.predict(input_matrix)
+        # return the version of the predictions that have been rounded to 0, 1
+        return np.where(out >= 0.5, 1, 0)
 
     def gradients(self,
                   input_matrix: np.ndarray,
