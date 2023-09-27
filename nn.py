@@ -76,7 +76,7 @@ class SimpleNetwork:
         outputs - each either 0 or 1 - for the corresponding row in the input
         matrix.
         """
-        # run the predict method to get initial predictions (belonging to a 
+        # run the predict method to get initial predictions (belonging to a
             # logistic distribution)
         preds = self.predict(input_matrix)
         # return the version of the predictions that have been rounded to 0, 1
@@ -130,9 +130,10 @@ class SimpleNetwork:
         :return: two matrices of gradients, one for the input-to-hidden weights
         and one for the hidden-to-output weights
         """
+        # do forward propogation
         preds = self.predict(input_matrix)
         # error = predicted - observed
-        error_L = preds - output_matrix
+        error_l = preds - output_matrix
 
     def train(self,
               input_matrix: np.ndarray,
