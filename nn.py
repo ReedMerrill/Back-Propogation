@@ -3,11 +3,10 @@ The main code for the back propagation assignment. See README.md for details.
 """
 import math
 import copy
-from scipy.special import expit as sig
 from typing import List
 
 import numpy as np
-
+from scipy.special import expit
 
 class SimpleNetwork:
     """A simple feedforward network where all units have sigmoid activation.
@@ -55,13 +54,13 @@ class SimpleNetwork:
         input matrix.
         """
         # initialize the output matrix as the input matrix
-        o = copy.deepcopy(input_matrix)
-        # Apply each set of weights using the dot product. Also apply 
+        out = copy.deepcopy(input_matrix)
+        # Apply each set of weights using the dot product. Also apply
             # sigmoid transformation to each layer.
         for weights in self.layer_weights:
-            o = sig(o.dot(weights))
+            out = expit(out.dot(weights))
 
-        return o
+        return out
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -77,6 +76,7 @@ class SimpleNetwork:
         outputs - each either 0 or 1 - for the corresponding row in the input
         matrix.
         """
+        return np.where(condition=self.predict(input_matrix)>0.5, x=1, y=0)
 
     def gradients(self,
                   input_matrix: np.ndarray,
