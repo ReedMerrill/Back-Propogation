@@ -54,13 +54,13 @@ class SimpleNetwork:
         input matrix.
         """
         # initialize the output matrix as the input matrix
-        out = copy.deepcopy(input_matrix)
+        preds = copy.deepcopy(input_matrix)
         # Apply each set of weights using the dot product. Also apply
             # sigmoid transformation to each layer.
         for weights in self.layer_weights:
-            out = expit(out.dot(weights))
+            preds = expit(preds.dot(weights))
 
-        return out
+        return preds
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -78,9 +78,9 @@ class SimpleNetwork:
         """
         # run the predict method to get initial predictions (belonging to a 
             # logistic distribution)
-        out = self.predict(input_matrix)
+        preds = self.predict(input_matrix)
         # return the version of the predictions that have been rounded to 0, 1
-        return np.where(out >= 0.5, 1, 0)
+        return np.where(preds >= 0.5, 1, 0)
 
     def gradients(self,
                   input_matrix: np.ndarray,
@@ -130,6 +130,9 @@ class SimpleNetwork:
         :return: two matrices of gradients, one for the input-to-hidden weights
         and one for the hidden-to-output weights
         """
+        preds = self.predict(input_matrix)
+        # error = predicted - observed
+        error_L = preds - output_matrix
 
     def train(self,
               input_matrix: np.ndarray,
