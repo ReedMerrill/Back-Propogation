@@ -53,14 +53,24 @@ class SimpleNetwork:
         outputs - each in the range (0, 1) - for the corresponding row in the
         input matrix.
         """
-        # initialize the matrix activations
-        a = {[]}
-        # Apply each set of weights using the dot product. Also apply
-            # the sigmoid transformation to each layer.
-        for l, w in zip(input_matrix, self.layer_weights):
-            a.stack(expit(l.dot(w)))
+        # current activation. Start with the input matrix.
+        a_i = copy.deepcopy(input_matrix)
+        # list to store the activations. Store the input matrix as first element.
+        a_l = [copy.deepcopy(input_matrix)]
+        # list to store zs
+        z_l = []
+        # Apply each set of weights to the corresponding layer using the dot
+            # product and apply the sigmoid transformation. Store each activation
+            # and each z for later use.
+            # source: https://github.com/mnielsen/neural-networks-and-deep-
+                # learning/blob/master/src/network.py
+        for weights in self.layer_weights:
+            z_i = a_i.dot(weights)
+            a_i = expit(z_i)
+            z_l.append(z_i)
+            a_l.append(a_i)
 
-        return a
+        return a_i
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -78,9 +88,9 @@ class SimpleNetwork:
         """
         # run the predict method to get initial predictions (belonging to a
             # logistic distribution)
-        preds = self.predict(input_matrix)
+        a_i = self.predict(input_matrix)
         # return the version of the predictions that have been rounded to 0, 1
-        return np.where(preds >= 0.5, 1, 0)
+        return np.where(a_i >= 0.5, 1, 0)
 
     def gradients(self,
                   input_matrix: np.ndarray,
@@ -130,23 +140,36 @@ class SimpleNetwork:
         :return: two matrices of gradients, one for the input-to-hidden weights
         and one for the hidden-to-output weights
         """
-        # do forward propogation
-        a_l = self.predict(input_matrix)
-
-        # error = predicted - observed
-            # store in a list for later iteration
-        error_l = [a_l - output_matrix]
-
+        # do forward propogation and get predictions
+        # NOTE: change this call to predict to do forward prop so that z and 
+            # activations are generated and stored here.
+        preds = self.predict(input_matrix)
+        # The error. Starting value is for last layer: predicted - observed
+        error = preds - output_matrix
+        # number of input examples
+        n_ex = input_matrix.shape[0]
+        # gradients for output
+        gradients = []
         # define the sigmoid gradient
             # source: https://stackoverflow.com/a/27115201/9812619
-        def dsig(x):
-            (math.e^-x)/(1 + math.e^-x)^2
+        def sig_prime(array):
+            return expit(array) * (1 - expit(array))
+        # calculate gradient
+            # z is calculated in the predict method, and is the pre-activation
+            # weighted sums. self.z_l is reversed to facilitate more intuitive
+            # iteration in the loop.
+        for i in range(len(self.z_l)):
+            # calculate g_l:
+            g_l = (error * sig_prime(self.z_l[-i])).T
+            # calculate grad_l
+            grad_l = g_l.dot(self.a_l[-i - 1]).T / n_ex
+            # store gradient matrix
+            gradients.append(grad_l)
+            # calculate error to backpropogate
+            w_i = self.layer_weights[-i - 1]
+            error = w_i.dot(g_l).T
 
-        # calculate g_l
-        g_l = (error_l * dsig(a_l)).T
-    
-        # calculate grad_l
-        grad_l = np.dot(g_l, h_l) / input_matrix.shape[0]
+        return gradients
 
     def train(self,
               input_matrix: np.ndarray,
