@@ -53,14 +53,14 @@ class SimpleNetwork:
         outputs - each in the range (0, 1) - for the corresponding row in the
         input matrix.
         """
-        # initialize the output matrix as the input matrix
-        preds = copy.deepcopy(input_matrix)
+        # initialize the matrix activations
+        a = {[]}
         # Apply each set of weights using the dot product. Also apply
-            # sigmoid transformation to each layer.
-        for weights in self.layer_weights:
-            preds = expit(preds.dot(weights))
+            # the sigmoid transformation to each layer.
+        for l, w in zip(input_matrix, self.layer_weights):
+            a.stack(expit(l.dot(w)))
 
-        return preds
+        return a
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -131,9 +131,22 @@ class SimpleNetwork:
         and one for the hidden-to-output weights
         """
         # do forward propogation
-        preds = self.predict(input_matrix)
+        a_l = self.predict(input_matrix)
+
         # error = predicted - observed
-        error_l = preds - output_matrix
+            # store in a list for later iteration
+        error_l = [a_l - output_matrix]
+
+        # define the sigmoid gradient
+            # source: https://stackoverflow.com/a/27115201/9812619
+        def dsig(x):
+            (math.e^-x)/(1 + math.e^-x)^2
+
+        # calculate g_l
+        g_l = (error_l * dsig(a_l)).T
+    
+        # calculate grad_l
+        grad_l = np.dot(g_l, h_l) / input_matrix.shape[0]
 
     def train(self,
               input_matrix: np.ndarray,
