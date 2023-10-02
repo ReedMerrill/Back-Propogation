@@ -70,7 +70,7 @@ class SimpleNetwork:
             z_l.append(z_i)
             a_l.append(a_i)
 
-        return [a_i, a_l, z_l]
+        return a_i
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -141,12 +141,25 @@ class SimpleNetwork:
         and one for the hidden-to-output weights
         """
         # do forward propogation and get predictions
-        feed_forward = self.predict(input_matrix)
-        # extract activations and pre-activation node values
-        preds = feed_forward[0]
-        a_l = feed_forward[1]
-        z_l = feed_forward[2]
-        # The error. Starting value is for last layer: predicted - observed
+        # current activation. Start with the input matrix.
+        a_i = copy.deepcopy(input_matrix)
+        # list to store the activations. Store the input matrix as first element.
+        a_l = [copy.deepcopy(input_matrix)]
+        # list to store zs
+        z_l = []
+        # Apply each set of weights to the corresponding layer using the dot
+            # product and apply the sigmoid transformation. Store each activation
+            # and each z for later use.
+            # source: https://github.com/mnielsen/neural-networks-and-deep-
+                # learning/blob/master/src/network.py
+        for weights in self.layer_weights:
+            z_i = a_i.dot(weights)
+            a_i = expit(z_i)
+            z_l.append(z_i)
+            a_l.append(a_i)
+        # rename final set of activations to be the model predictions
+        preds = a_i
+       # The error. Starting value is for last layer: predicted - observed
         error = preds - output_matrix
         # gradients for output
         gradients = []
@@ -160,7 +173,7 @@ class SimpleNetwork:
             # iteration in the loop.
         for i in range(len(z_l)):
             # calculate g_l:
-            g_l = (error * sig_prime(z_l[-i])).T
+            g_l = (error.T * sig_prime(z_l[-i])).T
             # calculate grad_l over n input examples
             grad_l = g_l.dot(a_l[-i - 1]).T / input_matrix.shape[0]
             # store gradient matrix
