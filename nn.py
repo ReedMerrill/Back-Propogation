@@ -141,10 +141,10 @@ class SimpleNetwork:
         and one for the hidden-to-output weights
         """
         # do forward propogation and get predictions
-        # list to store the activations
-        a_l = [input_matrix]
         # list to store zs
         z_l = []
+        # list to store the activations
+        a_l = [input_matrix]
         # source: https://github.com/mnielsen/neural-networks-and-deep-
             # learning/blob/master/src/network.py
         for i, weights in enumerate(self.layer_weights):
@@ -158,8 +158,7 @@ class SimpleNetwork:
 
         # calculate the cost
         # rename final set of activations to reflect that they are model predictions
-        preds = a_i[-1]
-        error = preds - output_matrix
+        error = a_l[-1] - output_matrix
 
         # Do back-propogation to calculate gradients
         # initialize list of gradients
@@ -167,8 +166,9 @@ class SimpleNetwork:
         # reverse a_l and z_l to make indexing easier
         a_l_reversed = a_l[::-1]
         z_l_reversed = z_l[::-1]
+        w_l_reversed = self.layer_weights[::-1]
         # calculate gradient
-        for i in range(len(a_l)):
+        for i in range(len(z_l)):
             # calculate g_l:
             g_l = (error * sig_prime(z_l_reversed[i])).T
             # dot product of g_l and current activation / n input examples
@@ -176,8 +176,7 @@ class SimpleNetwork:
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
-            w_i = self.layer_weights[i + 1]
-            error = (np.dot(w_i, g_l)).T
+            error = (np.dot(w_l_reversed[i], g_l)).T
 
         # return gradients
         # reverse to change them to the order of the actual network
@@ -207,7 +206,9 @@ class SimpleNetwork:
         model weights.
         """
 
-# source: https://stackoverflow.com/a/27115201/9812619
+
+# Helper Functions
 def sig_prime(array):
     """Define sigmoid prime."""
+    # source: https://stackoverflow.com/a/27115201/9812619
     return expit(array) * (1 - expit(array))
