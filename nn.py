@@ -142,14 +142,14 @@ class SimpleNetwork:
         """
         # do forward propogation and get predictions
         # list to store the activations
-        a_l = []
+        a_l = [input_matrix]
         # list to store zs
         z_l = []
         # source: https://github.com/mnielsen/neural-networks-and-deep-
             # learning/blob/master/src/network.py
-        for weights in self.layer_weights:
+        for i, weights in enumerate(self.layer_weights):
             # Apply each set of weights to the corresponding layer
-            z_i = np.dot(input_matrix, weights)
+            z_i = np.dot(a_l[i], weights)
             # apply the sigmoid activation function
             a_i = expit(z_i)
             # add pre-activation weighted sums and activations to their lists
@@ -207,7 +207,7 @@ class SimpleNetwork:
         model weights.
         """
 
-# define sigmoid prime
-    # source: https://stackoverflow.com/a/27115201/9812619
+# source: https://stackoverflow.com/a/27115201/9812619
 def sig_prime(array):
+    """Define sigmoid prime."""
     return expit(array) * (1 - expit(array))
