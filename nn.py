@@ -141,51 +141,47 @@ class SimpleNetwork:
         and one for the hidden-to-output weights
         """
         # do forward propogation and get predictions
-        # current activation. Start with the input matrix.
-        a_i = copy.deepcopy(input_matrix)
-        # list to store the activations. Store the input matrix as first element.
-        a_l = [copy.deepcopy(input_matrix)]
+        # list to store the activations
+        a_l = []
         # list to store zs
         z_l = []
-        # Apply each set of weights to the corresponding layer using the dot
-            # product and apply the sigmoid transformation. Store each activation
-            # and each z for later use.
-            # source: https://github.com/mnielsen/neural-networks-and-deep-
-                # learning/blob/master/src/network.py
+        # source: https://github.com/mnielsen/neural-networks-and-deep-
+            # learning/blob/master/src/network.py
         for weights in self.layer_weights:
-            z_i = a_i.dot(weights)
+            # Apply each set of weights to the corresponding layer
+            z_i = np.dot(input_matrix, weights)
+            # apply the sigmoid activation function
             a_i = expit(z_i)
+            # add pre-activation weighted sums and activations to their lists
             z_l.append(z_i)
             a_l.append(a_i)
-        # rename final set of activations to be the model predictions
-        preds = a_i
-       # The error. Starting value is for last layer: predicted - observed
-        error = (preds - output_matrix).T
-        # gradients for output
+
+        # calculate the cost
+        # rename final set of activations to reflect that they are model predictions
+        preds = a_i[-1]
+        error = preds - output_matrix
+
+        # Do back-propogation to calculate gradients
+        # initialize list of gradients
         gradients = []
-        # define the sigmoid gradient
-            # source: https://stackoverflow.com/a/27115201/9812619
-        def sig_prime(array):
-            return expit(array) * (1 - expit(array))
-        # reversing a_l and z_l to make indexing easier
+        # reverse a_l and z_l to make indexing easier
         a_l_reversed = a_l[::-1]
         z_l_reversed = z_l[::-1]
         # calculate gradient
-            # z is calculated in the predict method, and is the pre-activation
-            # weighted sums. self.z_l is reversed to facilitate more intuitive
-            # iteration in the loop.
-        for i in range(len(z_l)):
+        for i in range(len(a_l)):
             # calculate g_l:
             g_l = (error * sig_prime(z_l_reversed[i])).T
-            # calculate grad_l over n input examples
-            grad_l = g_l.dot(a_l_reversed[i + 1]).T / input_matrix.shape[0]
+            # dot product of g_l and current activation / n input examples
+            grad_l = (np.dot(g_l, a_l_reversed[i + 1])).T / input_matrix.shape[0]
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
             w_i = self.layer_weights[i + 1]
-            error = w_i.dot(g_l)
+            error = (np.dot(w_i, g_l)).T
 
-        return gradients
+        # return gradients
+        # reverse to change them to the order of the actual network
+        return gradients[::-1]
 
     def train(self,
               input_matrix: np.ndarray,
@@ -210,3 +206,8 @@ class SimpleNetwork:
         number that the gradients should be multiplied by before updating the
         model weights.
         """
+
+# define sigmoid prime
+    # source: https://stackoverflow.com/a/27115201/9812619
+def sig_prime(array):
+    return expit(array) * (1 - expit(array))
