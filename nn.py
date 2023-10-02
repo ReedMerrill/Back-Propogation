@@ -208,7 +208,7 @@ class SimpleNetwork:
         # perform "iterations" number of gradient steps
         # initialize counter variable
         i = 0
-        while i < iterations:
+        while i != iterations:
 
             # calculate gradient matrices
             gradients = self.gradients(input_matrix, output_matrix)
@@ -219,10 +219,13 @@ class SimpleNetwork:
                 new_weights = w_i - (learning_rate * g_i)
                 # update weights
                 updated_weights.append(new_weights)
-                # increment counter
-                i += 1
 
-        self.layer_weights = updated_weights
+            # increment counter
+            i += 1
+
+            # asign updated weights to self.layer weights to be used in next
+                # gradient step
+            self.layer_weights = updated_weights
 
 # Helper Functions
 def sig_prime(array):
