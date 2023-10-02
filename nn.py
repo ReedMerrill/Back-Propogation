@@ -173,14 +173,14 @@ class SimpleNetwork:
             # iteration in the loop.
         for i in range(len(z_l)):
             # calculate g_l:
-            g_l = (error.T * sig_prime(z_l[-i])).T
+            g_l = (error * sig_prime(z_l[-i])).T
             # calculate grad_l over n input examples
             grad_l = g_l.dot(a_l[-i - 1]).T / input_matrix.shape[0]
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
-            w_i = self.layer_weights[-i - 1]
-            error = w_i.dot(g_l).T
+            w_i = self.layer_weights[-i - 1].T
+            error = w_i.dot(g_l)
 
         return gradients
 
