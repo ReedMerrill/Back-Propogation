@@ -167,19 +167,22 @@ class SimpleNetwork:
             # source: https://stackoverflow.com/a/27115201/9812619
         def sig_prime(array):
             return expit(array) * (1 - expit(array))
+        # reversing a_l and z_l to make indexing easier
+        a_l_reversed = a_l[::-1]
+        z_l_reversed = z_l[::-1]
         # calculate gradient
             # z is calculated in the predict method, and is the pre-activation
             # weighted sums. self.z_l is reversed to facilitate more intuitive
             # iteration in the loop.
         for i in range(len(z_l)):
             # calculate g_l:
-            g_l = (error * sig_prime(z_l[-i])).T
+            g_l = (error * sig_prime(z_l_reversed[i])).T
             # calculate grad_l over n input examples
-            grad_l = g_l.dot(a_l[-i - 1]).T / input_matrix.shape[0]
+            grad_l = g_l.dot(a_l_reversed[i + 1]).T / input_matrix.shape[0]
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
-            w_i = self.layer_weights[-i - 1].T
+            w_i = self.layer_weights[i + 1].T
             error = w_i.dot(g_l)
 
         return gradients
