@@ -158,7 +158,6 @@ class SimpleNetwork:
         a_l = activations[1]
 
         # calculate the cost
-        # rename final set of activations to reflect that they are model predictions
         error = a_l[-1] - output_matrix
 
         # Do back-propogation to calculate gradients
@@ -176,7 +175,7 @@ class SimpleNetwork:
             grad_l = (np.dot(g_l, a_l_reversed[i + 1])).T / input_matrix.shape[0]
             # store gradient matrix
             gradients.append(grad_l)
-            # calculate error to backpropogate
+            # calculate error to back-propogate
             error = (np.dot(w_l_reversed[i], g_l)).T
 
         # return gradients
