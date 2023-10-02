@@ -205,7 +205,24 @@ class SimpleNetwork:
         number that the gradients should be multiplied by before updating the
         model weights.
         """
+        # perform "iterations" number of gradient steps
+        # initialize counter variable
+        i = 0
+        while i < iterations:
 
+            # calculate gradient matrices
+            gradients = self.gradients(input_matrix, output_matrix)
+            # list of updated weights
+            updated_weights = []
+            for g_i, w_i in zip(gradients, self.layer_weights):
+                # apply gradient matrices to previous weights matrices
+                new_weights = w_i - (learning_rate * g_i)
+                # update weights
+                updated_weights.append(new_weights)
+                # increment counter
+                i += 1
+
+        self.layer_weights = updated_weights
 
 # Helper Functions
 def sig_prime(array):
