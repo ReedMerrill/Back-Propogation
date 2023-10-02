@@ -160,7 +160,7 @@ class SimpleNetwork:
         # rename final set of activations to be the model predictions
         preds = a_i
        # The error. Starting value is for last layer: predicted - observed
-        error = preds - output_matrix
+        error = (preds - output_matrix).T
         # gradients for output
         gradients = []
         # define the sigmoid gradient
@@ -182,7 +182,7 @@ class SimpleNetwork:
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
-            w_i = self.layer_weights[i + 1].T
+            w_i = self.layer_weights[i + 1]
             error = w_i.dot(g_l)
 
         return gradients
