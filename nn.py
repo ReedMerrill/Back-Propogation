@@ -70,7 +70,7 @@ class SimpleNetwork:
             z_l.append(z_i)
             a_l.append(a_i)
 
-        return a_i
+        return [a_i, a_l, z_l]
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -88,9 +88,9 @@ class SimpleNetwork:
         """
         # run the predict method to get initial predictions (belonging to a
             # logistic distribution)
-        a_i = self.predict(input_matrix)
+        preds = self.predict(input_matrix)
         # return the version of the predictions that have been rounded to 0, 1
-        return np.where(a_i >= 0.5, 1, 0)
+        return np.where(preds >= 0.5, 1, 0)
 
     def gradients(self,
                   input_matrix: np.ndarray,
@@ -141,13 +141,13 @@ class SimpleNetwork:
         and one for the hidden-to-output weights
         """
         # do forward propogation and get predictions
-        # NOTE: change this call to predict to do forward prop so that z and 
-            # activations are generated and stored here.
-        preds = self.predict(input_matrix)
+        feed_forward = self.predict(input_matrix)
+        # extract activations and pre-activation node values
+        preds = feed_forward[0]
+        a_l = feed_forward[1]
+        z_l = feed_forward[2]
         # The error. Starting value is for last layer: predicted - observed
         error = preds - output_matrix
-        # number of input examples
-        n_ex = input_matrix.shape[0]
         # gradients for output
         gradients = []
         # define the sigmoid gradient
@@ -158,11 +158,11 @@ class SimpleNetwork:
             # z is calculated in the predict method, and is the pre-activation
             # weighted sums. self.z_l is reversed to facilitate more intuitive
             # iteration in the loop.
-        for i in range(len(self.z_l)):
+        for i in range(len(z_l)):
             # calculate g_l:
-            g_l = (error * sig_prime(self.z_l[-i])).T
-            # calculate grad_l
-            grad_l = g_l.dot(self.a_l[-i - 1]).T / n_ex
+            g_l = (error * sig_prime(z_l[-i])).T
+            # calculate grad_l over n input examples
+            grad_l = g_l.dot(a_l[-i - 1]).T / input_matrix.shape[0]
             # store gradient matrix
             gradients.append(grad_l)
             # calculate error to backpropogate
