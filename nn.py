@@ -2,7 +2,6 @@
 The main code for the back propagation assignment. See README.md for details.
 """
 import math
-import copy
 from typing import List
 
 import numpy as np
@@ -27,6 +26,29 @@ class SimpleNetwork:
 
         pairs = zip(layer_units, layer_units[1:])
         return cls(*[uniform(i, o) for i, o in pairs])
+
+    def forward_prop(self, input_matrix: np.ndarray):
+        """Do forward propogation, returning two versions of the activations
+        for each layer: one that holds the node values before the sigmoid is
+        applied (z_l), and one that stores all the actual activations (a_l).
+        """
+        # do forward propogation and get predictions
+        # list to store zs
+        z_l = []
+        # list to store the activations
+        a_l = [input_matrix]
+        # source: https://github.com/mnielsen/neural-networks-and-deep-
+            # learning/blob/master/src/network.py
+        for i, weights in enumerate(self.layer_weights):
+            # Apply each set of weights to the corresponding layer
+            z_i = np.dot(a_l[i], weights)
+            # apply the sigmoid activation function
+            a_i = expit(z_i)
+            # add pre-activation weighted sums and activations to their lists
+            z_l.append(z_i)
+            a_l.append(a_i)
+
+        return [z_l, a_l]
 
     def __init__(self, *layer_weights: np.ndarray):
         """Creates a neural network from a list of weight matrices.
@@ -53,24 +75,12 @@ class SimpleNetwork:
         outputs - each in the range (0, 1) - for the corresponding row in the
         input matrix.
         """
-        # current activation. Start with the input matrix.
-        a_i = copy.deepcopy(input_matrix)
-        # list to store the activations. Store the input matrix as first element.
-        a_l = [copy.deepcopy(input_matrix)]
-        # list to store zs
-        z_l = []
-        # Apply each set of weights to the corresponding layer using the dot
-            # product and apply the sigmoid transformation. Store each activation
-            # and each z for later use.
-            # source: https://github.com/mnielsen/neural-networks-and-deep-
-                # learning/blob/master/src/network.py
-        for weights in self.layer_weights:
-            z_i = a_i.dot(weights)
-            a_i = expit(z_i)
-            z_l.append(z_i)
-            a_l.append(a_i)
-
-        return a_i
+        # call forward prop helper to get activations and final prediction
+        activations = self.forward_prop(input_matrix)
+        #extract activations
+        a_l = activations[1]
+        # return the last activation: the model predictions
+        return a_l[-1]
 
     def predict_zero_one(self, input_matrix: np.ndarray) -> np.ndarray:
         """Performs forward propagation over the neural network starting with
@@ -140,21 +150,12 @@ class SimpleNetwork:
         :return: two matrices of gradients, one for the input-to-hidden weights
         and one for the hidden-to-output weights
         """
-        # do forward propogation and get predictions
-        # list to store zs
-        z_l = []
-        # list to store the activations
-        a_l = [input_matrix]
-        # source: https://github.com/mnielsen/neural-networks-and-deep-
-            # learning/blob/master/src/network.py
-        for i, weights in enumerate(self.layer_weights):
-            # Apply each set of weights to the corresponding layer
-            z_i = np.dot(a_l[i], weights)
-            # apply the sigmoid activation function
-            a_i = expit(z_i)
-            # add pre-activation weighted sums and activations to their lists
-            z_l.append(z_i)
-            a_l.append(a_i)
+        # call forward prop helper to get activations and final prediction
+        activations = self.forward_prop(input_matrix)
+        # extract node values before sigmoid is applied
+        z_l = activations[0]
+        # extract activations
+        a_l = activations[1]
 
         # calculate the cost
         # rename final set of activations to reflect that they are model predictions
